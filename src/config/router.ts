@@ -1,0 +1,31 @@
+import { Router } from "express";
+import { formatDateTime, getTimezoneFromReq } from "../utils/date";
+import { prisma } from "../libs/prisma";
+import { sendSuccess } from "../utils/response";
+import { SuperAdminRouter } from "../features/secret/superadmin/superadmin.router";
+
+const router = Router()
+
+router.get("/users", async (req, res, next) => {
+  try {
+    const timezone = getTimezoneFromReq(req);
+    console.log("timezone1", timezone)
+    const users = await prisma.user.findMany();
+
+    // Format tanggal createdAt sesuai timezone client
+    const formattedUsers = users.map((user) => ({
+      ...user,
+      createdAtFormatted: formatDateTime(user.createdAt, timezone),
+    }));
+
+    return sendSuccess(res, "Data users berhasil diambil", formattedUsers);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.use("/secret", SuperAdminRouter)
+
+
+
+export { router }

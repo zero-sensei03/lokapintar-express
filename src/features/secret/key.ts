@@ -1,0 +1,1 @@
+export const signatureLocked = "$2b$10$2m1CoXkyq/t4UDBS1sXza.uTJaZRZUus89439GC2K5zDFuRtOcxv6"
