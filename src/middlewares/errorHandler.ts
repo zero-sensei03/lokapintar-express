@@ -3,25 +3,46 @@ import { Prisma } from "../generated/prisma/client";
 import { parsePrismaError } from "../utils/prismaError";
 import { sendError } from "../utils/response";
 import { Env } from "../config/Env";
+import { AppError } from "../utils/AppError";
 
 export const errorHandler = (
-  err: Error,
-  _req: Request,
-  res: Response,
-  _next: NextFunction
+    err: Error,
+    _req: Request,
+    res: Response,
+    _next: NextFunction
 ) => {
-  // Tangani khusus error dari Prisma Client Known Request
-  if (err instanceof Prisma.PrismaClientKnownRequestError) {
-    const { statusCode, message } = parsePrismaError(err);
-    return sendError(res, message, null, statusCode);
-  }
+    // Custom application error
+    if (err instanceof AppError) {
+        return sendError(
+            res,
+            err.message,
+            null,
+            err.statusCode
+        );
+    }
 
-  // Error umum atau tak terduga
-  console.error(`[Unhandled Error]: ${err.message}`, err.stack);
-  return sendError(
-    res,
-    err.message || "Internal Server Error",
-    Env.NODE_ENV === "development" ? err.stack : null,
-    500
-  );
+    // Prisma known request error
+    if (err instanceof Prisma.PrismaClientKnownRequestError) {
+        const { statusCode, message } = parsePrismaError(err);
+
+        return sendError(
+            res,
+            message,
+            null,
+            statusCode
+        );
+    }
+
+    // Unexpected error
+    console.error(
+        `[Unhandled Error]: ${err.message}`,
+        err.stack
+    );
+
+    return sendError(
+        res,
+        "Internal Server Error",
+        Env.NODE_ENV === "development" ? err.stack : null,
+        500
+    );
 };

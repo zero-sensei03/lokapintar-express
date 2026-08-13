@@ -11,6 +11,14 @@ export const Env = {
   JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || "default_refresh_secret_key",
   JWT_ACCESS_EXPIRES_IN: process.env.JWT_ACCESS_EXPIRES_IN || "15m",
   JWT_REFRESH_EXPIRES_IN: process.env.JWT_REFRESH_EXPIRES_IN || "7d",
+
+  // Mail Server
+  EMAIL_SERVER_USER: process.env.EMAIL_SERVER_USER || "",
+  EMAIL_SERVER_PASSWORD: process.env.EMAIL_SERVER_PASSWORD || "",
+  EMAIL_SERVER_HOST: process.env.EMAIL_SERVER_HOST || "smtp.gmail.com",
+  EMAIL_SERVER_PORT: Number(process.env.EMAIL_SERVER_PORT || "587"),
+  EMAIL_SERVER_SECURE: process.env.EMAIL_SERVER_SECURE ? process.env.EMAIL_SERVER_SECURE.toLowerCase() === "true" ? true : false : false,
+  EMAIL_FROM: process.env.EMAIL_FROM || "",
 };
 
 // Validasi saat startup

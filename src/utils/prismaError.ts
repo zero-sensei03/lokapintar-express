@@ -6,6 +6,7 @@ interface ParsedPrismaError {
 }
 
 export const parsePrismaError = (error: Prisma.PrismaClientKnownRequestError): ParsedPrismaError => {
+  console.error(error)
   switch (error.code) {
     case "P2002": {
       const target = (error.meta?.target as string[])?.join(", ") || "field";

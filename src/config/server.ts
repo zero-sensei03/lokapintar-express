@@ -8,13 +8,17 @@ import { formatDateTime, getTimezoneFromReq } from "../utils/date";
 import { sendSuccess } from "../utils/response";
 import { corsMiddleware } from "./cors";
 import { router } from "./router";
+import { globalLimiter, securityHeaders } from "../middlewares/security";
 
 const PORT = Env.PORT;
 
 const app = express();
+app.use(securityHeaders);
+app.use(globalLimiter);
 app.use(corsMiddleware)
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 
 // Public Route (Dengan contoh Timezone Dinamis)

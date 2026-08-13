@@ -19,6 +19,12 @@ enum Role {
   CONSUMER
 }
 
+enum OTPType {
+  REGISTER
+  FORGOT_PASSWORD
+  CHANGE_EMAIL
+}
+
 enum ContentType {
   TEXT
   IMAGE
@@ -67,4 +73,16 @@ model User {
 
   @@index([email])
   @@index([role])
+}
+
+model OtpVerification {
+  id            String    @id @default(uuid())
+  email         String
+  otpHash       String
+  otpType       OTPType
+
+  expiredAt     DateTime
+  createdAt     DateTime  @default(now())
+
+  @@unique([email, otpType])
 }
