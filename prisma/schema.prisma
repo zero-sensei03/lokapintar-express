@@ -12,6 +12,12 @@ datasource db {
   provider = "postgresql"
 }
 
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
 enum Role {
   SUPERADMIN
   EDUCATOR
@@ -60,14 +66,19 @@ enum TransactionStatus {
 // ==========================================
 
 model User {
-  id            String    @id @default(uuid())
-  name          String
-  email         String    @unique
-  passwordHash  String
-  role          Role      @default(CONSUMER)
-  avatarUrl     String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id                    String      @id @default(uuid())
+  name                  String
+  email                 String      @unique
+  passwordHash          String
+  role                  Role        @default(CONSUMER)
+  avatarUrl             String?
+  status                UserStatus  @default(INACTIVE)
+  emailVerifiedAt       DateTime?
+  lastSuspendedAt       DateTime?
+
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  deletedAt             DateTime?
 
   educatorSubExpiresAt  DateTime?
 

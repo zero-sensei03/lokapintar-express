@@ -1,4 +1,4 @@
-import { Role } from "../../../generated/prisma/enums";
+import { Role, UserStatus } from "../../../generated/prisma/enums";
 import { prisma } from "../../../libs/prisma"
 import { hashPassword } from "../../../utils/bcrypt";
 
@@ -13,7 +13,9 @@ export const CreateUser = async (data: CreateSuperAdminInterface) => {
         name: data.name.trim(),
         email: data.email.toLowerCase(),
         passwordHash: await hashPassword(data.password),
-        role: Role.SUPERADMIN
+        role: Role.SUPERADMIN,
+        status: UserStatus.ACTIVE,
+        emailVerifiedAt: new Date()
     }
     return prisma.user.upsert({
         where: {
@@ -25,6 +27,8 @@ export const CreateUser = async (data: CreateSuperAdminInterface) => {
             name: true,
             email: true,
             role: true,
+            status: true,
+            emailVerifiedAt: true,
             createdAt: true
         }
     })

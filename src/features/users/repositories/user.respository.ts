@@ -25,6 +25,8 @@ export class UserRepository {
                 email: true,
                 role: true,
                 avatarUrl: true,
+                status: true,
+                emailVerifiedAt: true,
                 createdAt: true
             }
         })
@@ -41,6 +43,8 @@ export class UserRepository {
                 role: true,
                 passwordHash: true,
                 avatarUrl: true,
+                status: true,
+                emailVerifiedAt: true,
                 createdAt: true
             }
         })
