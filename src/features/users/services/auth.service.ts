@@ -212,15 +212,6 @@ export class AuthService {
         }
     }
 
-    async me(userId: string) {
-        const user = await this.userRepository.getUserById(prisma, userId);
-        if (!user) throw new AppError("User account could not be found.", 404);
-        if (user.status !== "ACTIVE") throw new AppError("Your account is not active.", 403);
-
-        return user;
-    }
-
-
     async forgotPasswordOtp(email: string) {
         const normalizedEmail = email.trim().toLowerCase();
 

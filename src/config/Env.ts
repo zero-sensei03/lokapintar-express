@@ -2,6 +2,7 @@ import "dotenv/config";
 
 export const Env = {
   NODE_ENV: process.env.NODE_ENV || "development",
+  APP_URL: process.env.APP_URL || "http://localhost:3000",
   PORT: Number(process.env.PORT) || 3000,
   DATABASE_URL: process.env.DATABASE_URL || "",
   CORS_ORIGIN: process.env.CORS_ORIGIN || "http://localhost:5173,http://localhost:3000",
@@ -19,6 +20,23 @@ export const Env = {
   EMAIL_SERVER_PORT: Number(process.env.EMAIL_SERVER_PORT || "587"),
   EMAIL_SERVER_SECURE: process.env.EMAIL_SERVER_SECURE ? process.env.EMAIL_SERVER_SECURE.toLowerCase() === "true" ? true : false : false,
   EMAIL_FROM: process.env.EMAIL_FROM || "",
+
+  // stprage
+  STORAGE_TYPE: process.env.STORAGE_TYPE || "local",
+  LOCAL_UPLOAD_DIR: process.env.LOCAL_UPLOAD_DIR || "storage/uploads",
+  S3_ENDPOINT: process.env.S3_ENDPOINT,
+  S3_REGION: process.env.S3_REGION,
+  S3_ACCESS_KEY: process.env.S3_ACCESS_KEY,
+  S3_SECRET_KEY: process.env.S3_SECRET_KEY,
+  S3_BUCKET_NAME: process.env.S3_BUCKET_NAME,
+  S3_PUBLIC_URL: process.env.S3_PUBLIC_URL,
+  GCS_BASE_URL: process.env.GCS_BASE_URL,
+  GCS_PROJECT_ID: process.env.GCS_PROJECT_ID,
+  GCS_KEY_FILE_PATH: process.env.GCS_KEY_FILE_PATH,
+  GCS_BUCKET_NAME: process.env.GCS_BUCKET_NAME,
+  SUPABASE_URL: process.env.SUPABASE_URL,
+  SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
+  SUPABASE_BUCKET_NAME: process.env.SUPABASE_BUCKET_NAME,
 };
 
 // Validasi saat startup

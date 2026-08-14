@@ -31,6 +31,13 @@ enum OTPType {
   CHANGE_EMAIL
 }
 
+enum StorageProvider {
+  LOCAL
+  S3
+  GCS
+  SUPABASE
+}
+
 enum ContentType {
   TEXT
   IMAGE
@@ -61,17 +68,28 @@ enum TransactionStatus {
   REFUNDED
 }
 
-// ==========================================
-// USER & MONETIZATION MANAGEMENT
-// ==========================================
+model Media {
+  id          String          @id @default(uuid())
+  filename    String          // Nama file asli dari user saat diunggah
+  key         String          @unique // Path/Key unik di storage (e.g. "avatars/uuid.webp")
+  url         String          // Public URL untuk mengakses file
+  mimetype    String          // Contoh: "image/webp", "image/gif"
+  size        Int             // Ukuran file dalam bytes
+  provider    StorageProvider // Menyimpan driver storage yang digunakan saat upload
 
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  userAvatar  User?           @relation("UserAvatar")
+
+  @@index([provider])
+}
 model User {
   id                    String      @id @default(uuid())
   name                  String
   email                 String      @unique
   passwordHash          String
   role                  Role        @default(CONSUMER)
-  avatarUrl             String?
   status                UserStatus  @default(INACTIVE)
   emailVerifiedAt       DateTime?
   lastSuspendedAt       DateTime?
@@ -81,6 +99,9 @@ model User {
   deletedAt             DateTime?
 
   educatorSubExpiresAt  DateTime?
+
+  avatarId  String?     @unique
+  avatar    Media?      @relation("UserAvatar", fields: [avatarId], references: [id], onDelete: SetNull)
 
   @@index([email])
   @@index([role])

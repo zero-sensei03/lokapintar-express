@@ -1,12 +1,10 @@
 import "dotenv/config";
 import express from "express";
+import path from 'path';
 import cookieParser from "cookie-parser";
-import { prisma } from "../libs/prisma";
+
 import { errorHandler } from "../middlewares/errorHandler";
-import { authenticate, authorizeRoles } from "../middlewares/auth"
 import { Env } from "./Env";
-import { formatDateTime, getTimezoneFromReq } from "../utils/date";
-import { sendSuccess } from "../utils/response";
 import { corsMiddleware } from "./cors";
 import { router } from "./router";
 import { globalLimiter, securityHeaders } from "../middlewares/security";
@@ -34,6 +32,7 @@ app.get("/health", async (req, res) => {
   })
 });
 
+app.use('/uploads', express.static(path.join(process.cwd(), 'storage/uploads')));
 app.use("/api", router)
 
 app.use(errorHandler);

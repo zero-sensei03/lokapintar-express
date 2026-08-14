@@ -24,10 +24,14 @@ export class UserRepository {
                 name: true,
                 email: true,
                 role: true,
-                avatarUrl: true,
                 status: true,
                 emailVerifiedAt: true,
-                createdAt: true
+                createdAt: true,
+                avatar: {
+                    select: {
+                        url: true
+                    }
+                },
             }
         })
     }
@@ -42,10 +46,14 @@ export class UserRepository {
                 email: true,
                 role: true,
                 passwordHash: true,
-                avatarUrl: true,
                 status: true,
                 emailVerifiedAt: true,
-                createdAt: true
+                createdAt: true,
+                avatar: {
+                    select: {
+                        url: true
+                    }
+                },
             }
         })
     }
@@ -59,10 +67,14 @@ export class UserRepository {
                 name: true,
                 email: true,
                 role: true,
-                avatarUrl: true,
                 status: true,
                 emailVerifiedAt: true,
-                createdAt: true
+                createdAt: true,
+                avatar: {
+                    select: {
+                        url: true
+                    }
+                },
             }
         })
     }
@@ -77,10 +89,14 @@ export class UserRepository {
                 name: true,
                 email: true,
                 role: true,
-                avatarUrl: true,
                 status: true,
                 emailVerifiedAt: true,
-                createdAt: true
+                createdAt: true,
+                avatar: {
+                    select: {
+                        url: true
+                    }
+                },
             }
         })
     }

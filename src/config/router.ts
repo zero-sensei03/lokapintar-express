@@ -5,6 +5,8 @@ import { sendSuccess } from "../utils/response";
 import { SuperAdminRouter } from "../features/secret/superadmin/superadmin.router";
 import { CaptchRouter } from "../features/captcha/captcha.router";
 import { authRouter } from "../features/users/routes/auth.route";
+import { authenticate } from "../middlewares/auth";
+import { profileRouter } from "../features/users/routes/profile.router";
 
 const router = Router()
 
@@ -29,6 +31,7 @@ router.get("/users", async (req, res, next) => {
 router.use("/secret", SuperAdminRouter)
 router.use("/captcha", CaptchRouter)
 router.use("/auth", authRouter)
+router.use("/profile", authenticate, profileRouter)
 
 
 export { router }

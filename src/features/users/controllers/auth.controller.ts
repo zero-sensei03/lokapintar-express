@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { AuthService } from "../services/auth.service";
-import { RegisterSchema, RequestLoginDTO, RequestRegisterDTO, RequestResetDTO } from "../dto/auth.dto";
+import { RequestLoginDTO, RequestRegisterDTO, RequestResetDTO } from "../dto/auth.dto";
 import { sendError, sendSuccess } from "../../../utils/response";
 import { verifyCaptcha } from "../../../utils/captcha";
 import { RequestOTPVerifyDTO } from "../dto/otp.dto";
@@ -58,11 +58,11 @@ export class AuthController {
         try {
             const payload: RequestLoginDTO = req.body;
 
-            const checkCaptcha = verifyCaptcha(payload.captchaAnswer, payload.captchaToken)
+            // const checkCaptcha = verifyCaptcha(payload.captchaAnswer, payload.captchaToken)
 
-            if(!checkCaptcha) {
-                return sendError(res, "Invalid or incorrect CAPTCHA", null, 400)
-            }
+            // if(!checkCaptcha) {
+            //     return sendError(res, "Invalid or incorrect CAPTCHA", null, 400)
+            // }
 
             const result = await this.authService.login(payload);
 
@@ -109,19 +109,6 @@ export class AuthController {
             });
 
             return sendSuccess(res, "Session refreshed successfully", { user: result.user }, 200);
-        } catch (error) {
-            next(error)
-        }
-    }
-
-    me = async (req: Request, res: Response, next: NextFunction) => {
-        try {
-            const userId = req.user?.userId || "";
-            if (!userId) return sendError(res, "User profile not found", null, 404);
-
-            const result = await this.authService.me(userId);
-
-            return sendSuccess(res, "User profile get successfully", result, 200);
         } catch (error) {
             next(error)
         }

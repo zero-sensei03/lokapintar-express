@@ -4,6 +4,9 @@ node_modules/
 # Build Output
 dist/
 
+# storage
+storage/
+
 # Environment Variables
 .env
 .env.local
