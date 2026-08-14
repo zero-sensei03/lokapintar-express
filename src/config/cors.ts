@@ -5,6 +5,7 @@ export const corsOptions: CorsOptions = {
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: "*", // Mengizinkan semua custom header (termasuk x-timezone, Authorization, dll)
   optionsSuccessStatus: 200,
+  credentials: true,
 };
 
 export const corsMiddleware = cors(corsOptions);

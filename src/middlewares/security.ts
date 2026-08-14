@@ -13,13 +13,13 @@ export const securityHeaders = helmet();
  */
 export const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 250,
   standardHeaders: true,
   legacyHeaders: false,
   handler: (_req, res) => {
     return sendError(
       res,
-      "Terlalu banyak permintaan dari IP ini. Silakan coba lagi nanti.",
+      "Too many requests from this IP address. Please try again later.",
       null,
       429
     );
@@ -38,7 +38,7 @@ export const strictAuthLimiter = rateLimit({
   handler: (_req, res) => {
     return sendError(
       res,
-      "Terlalu banyak percobaan akses. Silakan coba lagi setelah 15 menit.",
+      "Too many attempts. Please try again after 15 minutes.",
       null,
       429
     );

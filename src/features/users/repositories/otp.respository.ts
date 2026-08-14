@@ -44,4 +44,15 @@ export class OTPRepository {
             }
         })
     }
+
+    async deleteOtp(prisma: Prisma.TransactionClient, email: string, otpType: OTPType): Promise<OtpModel | null> {
+        return await prisma.otpVerification.delete({
+            where: {
+                email_otpType: {
+                    email,
+                    otpType
+                }
+            }
+        })
+    }
 }

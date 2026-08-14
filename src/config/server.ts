@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express from "express";
+import cookieParser from "cookie-parser";
 import { prisma } from "../libs/prisma";
 import { errorHandler } from "../middlewares/errorHandler";
 import { authenticate, authorizeRoles } from "../middlewares/auth"
@@ -16,40 +17,24 @@ const app = express();
 app.use(securityHeaders);
 app.use(globalLimiter);
 app.use(corsMiddleware)
+app.use(cookieParser())
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-
-// Public Route (Dengan contoh Timezone Dinamis)
-app.use("/api", router)
-
-// Protected Route: Khusus User terautentikasi
-app.get("/profile", authenticate, async (req, res, next) => {
-  try {
-    const userId = req.user?.userId;
-    const user = await prisma.user.findUnique({ where: { id: userId } });
-
-    const timezone = getTimezoneFromReq(req);
-
-    return sendSuccess(res, "Profile user", {
-      ...user,
-      createdAtFormatted: formatDateTime(user!.createdAt, timezone),
-    });
-  } catch (err) {
-    next(err);
-  }
+app.get("/health", async (req, res) => {
+  res.json({
+    message: "Service is healthy",
+    data: {
+      status: "UP",
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      environment: Env.NODE_ENV || "development",
+    }
+  })
 });
 
-// Protected Route Khusus Admin / Educator
-app.get(
-  "/admin/dashboard",
-  authenticate,
-  authorizeRoles("SUPERADMIN", "EDUCATOR"),
-  async (_req, res) => {
-    return sendSuccess(res, "Selamat datang di Dashboard Educator/Admin");
-  }
-);
+app.use("/api", router)
 
 app.use(errorHandler);
 

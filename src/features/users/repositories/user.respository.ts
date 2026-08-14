@@ -1,5 +1,5 @@
 import { Prisma, User } from "../../../generated/prisma/client";
-import { Role } from "../../../generated/prisma/enums";
+import { Role, UserStatus } from "../../../generated/prisma/enums";
 
 export type UserModel = {
     name: string;
@@ -18,6 +18,27 @@ export class UserRepository {
                 passwordHash: payload.passwordHash,
                 avatarUrl: payload.avatarUrl,
                 role: payload.role
+            },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+                avatarUrl: true,
+                status: true,
+                emailVerifiedAt: true,
+                createdAt: true
+            }
+        })
+    }
+    async activatedUser(prisma: Prisma.TransactionClient, email: string, payload: { emailVerifiedAt: Date, status: UserStatus }): Promise<Partial<User>> {
+        return await prisma.user.update({
+            where: {
+                email
+            },
+            data: {
+                emailVerifiedAt: payload.emailVerifiedAt,
+                status: payload.status
             },
             select: {
                 id: true,

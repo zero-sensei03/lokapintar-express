@@ -11,20 +11,28 @@ export const authenticate = (
   res: Response,
   next: NextFunction
 ) => {
-  const authHeader = req.headers.authorization;
+  const accessToken = req.cookies?.accessToken;
 
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return sendError(res, "Akses ditolak. Token tidak ditemukan.", null, 401);
+  if (!accessToken) {
+    return sendError(
+      res,
+      "Authentication required. Access token not found.",
+      null,
+      401
+    );
   }
 
-  const token = authHeader.split(" ")[1];
-
   try {
-    const decoded = verifyAccessToken(token);
+    const decoded = verifyAccessToken(accessToken);
     req.user = decoded; // Menyimpan data payload JWT (userId & role) ke request
     next();
   } catch (error) {
-    return sendError(res, "Token tidak valid atau sudah kadaluwarsa.", null, 401);
+    return sendError(
+      res,
+      "Invalid or expired access token.",
+      null,
+      401
+    );
   }
 };
 
@@ -35,13 +43,18 @@ export const authenticate = (
 export const authorizeRoles = (...allowedRoles: Role[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
-      return sendError(res, "Unauthorized", null, 401);
+      return sendError(
+        res,
+        "Authentication required.",
+        null,
+        401
+      );
     }
 
     if (!allowedRoles.includes(req.user.role as Role)) {
       return sendError(
         res,
-        "Anda tidak memiliki hak akses untuk melakukan aksi ini.",
+        "You do not have permission to perform this action.",
         null,
         403
       );

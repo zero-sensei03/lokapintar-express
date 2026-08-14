@@ -6,6 +6,9 @@ export interface CaptchaPayload {
   text: string;
 }
 
+/**
+ * Generate SVG CAPTCHA beserta token verifikasi
+ */
 export const generateCaptcha = () => {
   const captcha = svgCaptcha.create({
     size: 6,
@@ -16,19 +19,38 @@ export const generateCaptcha = () => {
     height: 50,
   });
 
+  /**
+   * Simpan text CAPTCHA PERSIS seperti yang dibuat.
+   *
+   * Jangan menggunakan toLowerCase() / toUpperCase()
+   * karena CAPTCHA bersifat case-sensitive.
+   */
   const captchaToken = jwt.sign(
-    { text: captcha.text.toLowerCase() },
+    {
+      text: captcha.text,
+    },
     Env.JWT_ACCESS_SECRET,
-    { expiresIn: "5m" }
+    {
+      expiresIn: "5m",
+    }
   );
 
-  // SVG asli
+  /**
+   * SVG asli
+   */
   const imageSvg = captcha.data;
 
-  // Konversi SVG menjadi Base64 yang benar
-  const base64 = Buffer.from(imageSvg, "utf-8").toString("base64");
+  /**
+   * Konversi SVG menjadi Base64
+   */
+  const base64 = Buffer
+    .from(imageSvg, "utf-8")
+    .toString("base64");
 
-  // Data URI untuk langsung digunakan di <img src="">
+  /**
+   * Data URI yang bisa langsung digunakan
+   * sebagai src pada <img>
+   */
   const base64Svg = `data:image/svg+xml;base64,${base64}`;
 
   return {
@@ -38,6 +60,17 @@ export const generateCaptcha = () => {
   };
 };
 
+/**
+ * Verify CAPTCHA
+ *
+ * CAPTCHA bersifat CASE-SENSITIVE.
+ *
+ * Contoh:
+ * CAPTCHA       : Ab7XkP
+ * Input benar   : Ab7XkP
+ * Input salah   : ab7xkp
+ * Input salah   : AB7XKP
+ */
 export const verifyCaptcha = (
   inputText: string,
   token: string
@@ -48,7 +81,14 @@ export const verifyCaptcha = (
       Env.JWT_ACCESS_SECRET
     ) as CaptchaPayload;
 
-    return decoded.text === inputText.toLowerCase();
+    /**
+     * Trim hanya untuk menghindari spasi tidak sengaja
+     * di awal / akhir input.
+     *
+     * Tidak menggunakan lowercase/uppercase,
+     * sehingga tetap CASE-SENSITIVE.
+     */
+    return decoded.text === inputText.trim();
   } catch {
     return false;
   }

@@ -29,7 +29,7 @@ export const validate = (schema: ZodObject<any>) => {
 
         return sendError(
           res,
-          "Validasi gagal. Periksa kembali inputan Anda.",
+          "Validation failed. Please check your input and try again.",
           formattedErrors,
           400
         );
