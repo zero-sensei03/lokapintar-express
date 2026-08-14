@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { AuthService } from "../services/auth.service";
-import { RegisterSchema, RequestLoginDTO, RequestRegisterDTO } from "../dto/auth.dto";
+import { RegisterSchema, RequestLoginDTO, RequestRegisterDTO, RequestResetDTO } from "../dto/auth.dto";
 import { sendError, sendSuccess } from "../../../utils/response";
 import { verifyCaptcha } from "../../../utils/captcha";
 import { RequestOTPVerifyDTO } from "../dto/otp.dto";
@@ -79,7 +79,82 @@ export class AuthController {
                 ),
             });
 
+            console.log(res.cookie)
+
             return sendSuccess(res, "Congratulation!, You has been login succesfully", { user: result.user }, 200);
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    refresh = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const refreshToken = req.cookies?.refreshToken;
+
+            if (!refreshToken) return sendError(res, "Refresh token not found. Please log in again.", null, 401);
+
+            const result = await this.authService.refresh(refreshToken);
+
+            res.cookie("accessToken", result.accessToken, {
+                ...cookieOptions,
+                maxAge: parseDurationToMs(
+                    Env.JWT_ACCESS_EXPIRES_IN
+                ),
+            });
+            res.cookie("refreshToken", result.refreshToken, {
+                ...cookieOptions,
+                maxAge: parseDurationToMs(
+                    Env.JWT_REFRESH_EXPIRES_IN
+                ),
+            });
+
+            return sendSuccess(res, "Session refreshed successfully", { user: result.user }, 200);
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    me = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const userId = req.user?.userId || "";
+            if (!userId) return sendError(res, "User profile not found", null, 404);
+
+            const result = await this.authService.me(userId);
+
+            return sendSuccess(res, "User profile get successfully", result, 200);
+        } catch (error) {
+            next(error)
+        }
+    }
+
+    forgotPassword = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { email } = req.body;
+
+            if(!email) return sendError(res, "Email is required", null, 422);
+
+            const result = await this.authService.forgotPasswordOtp(email);
+            return sendSuccess(res, "OTP has been sent successfully. Please check your email to continue reset your password.", result, 201);
+        } catch (error) {
+            next(error)
+        }
+    }
+    verifyResetOtp = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const payload: RequestOTPVerifyDTO = req.body;
+
+            const result = await this.authService.verifyForgotPasswordOtp(payload);
+            return sendSuccess(res, "OTP verified successfully. You can reset your password.", result, 200);
+        } catch (error) {
+            next(error)
+        }
+    }
+    resetPassword = async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const payload: RequestResetDTO = req.body;
+
+            const result = await this.authService.resetPasswordOtp(payload);
+            return sendSuccess(res, "Password reset successfully", result, 200);
         } catch (error) {
             next(error)
         }

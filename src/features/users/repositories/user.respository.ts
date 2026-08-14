@@ -31,14 +31,28 @@ export class UserRepository {
             }
         })
     }
-    async activatedUser(prisma: Prisma.TransactionClient, email: string, payload: { emailVerifiedAt: Date, status: UserStatus }): Promise<Partial<User>> {
-        return await prisma.user.update({
+    async getUserByEmail(prisma: Prisma.TransactionClient, email: string): Promise<Partial<User> | null> {
+        return await prisma.user.findUnique({
             where: {
                 email
             },
-            data: {
-                emailVerifiedAt: payload.emailVerifiedAt,
-                status: payload.status
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+                passwordHash: true,
+                avatarUrl: true,
+                status: true,
+                emailVerifiedAt: true,
+                createdAt: true
+            }
+        })
+    }
+    async getUserById(prisma: Prisma.TransactionClient, id: string): Promise<Partial<User> | null> {
+        return await prisma.user.findUnique({
+            where: {
+                id
             },
             select: {
                 id: true,
@@ -52,17 +66,17 @@ export class UserRepository {
             }
         })
     }
-    async getUserByEmail(prisma: Prisma.TransactionClient, email: string): Promise<Partial<User> | null> {
-        return await prisma.user.findUnique({
+    async patchUser(prisma: Prisma.TransactionClient, id: string, payload: Partial<User>): Promise<Partial<User>> {
+        return await prisma.user.update({
             where: {
-                email
+                id
             },
+            data: payload,
             select: {
                 id: true,
                 name: true,
                 email: true,
                 role: true,
-                passwordHash: true,
                 avatarUrl: true,
                 status: true,
                 emailVerifiedAt: true,

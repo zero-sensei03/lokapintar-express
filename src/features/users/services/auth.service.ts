@@ -2,9 +2,9 @@ import { sendRegistrationOtpEmail } from "../../../libs/email";
 import { prisma } from "../../../libs/prisma";
 import { AppError } from "../../../utils/AppError";
 import { comparePassword, hashPassword } from "../../../utils/bcrypt";
-import { generateAuthTokens } from "../../../utils/jwt";
+import { generateAuthTokens, verifyAccessToken, verifyRefreshToken } from "../../../utils/jwt";
 import { generateOTP } from "../../../utils/otp";
-import { RequestLoginDTO, RequestRegisterDTO } from "../dto/auth.dto";
+import { RequestLoginDTO, RequestRegisterDTO, RequestResetDTO } from "../dto/auth.dto";
 import { RequestOTPVerifyDTO } from "../dto/otp.dto";
 import { OTPRepository } from "../repositories/otp.respository";
 import { UserModel, UserRepository } from "../repositories/user.respository";
@@ -134,16 +134,16 @@ export class AuthService {
                 "REGISTER"
             );
 
-            const activatedUser = await this.userRepository.activatedUser(
+            const patchUser = await this.userRepository.patchUser(
                 tx,
-                normalizedEmail,
+                user.id || "",
                 {
                     emailVerifiedAt: new Date(),
                     status: "ACTIVE",
                 }
             );
 
-            return activatedUser;
+            return patchUser;
         });
     }
 
@@ -183,5 +183,153 @@ export class AuthService {
             throw error;
         }
 
+    }
+
+    async refresh(refreshToken: string) {
+        const checkRefreshToken = verifyRefreshToken(refreshToken);
+        if(!checkRefreshToken) throw new AppError("Refresh token is not valid", 401);
+
+        const user = await this.userRepository.getUserById(prisma, checkRefreshToken.userId);
+        if (!user) throw new AppError("User account could not be found.", 404);
+
+        if (user.status !== "ACTIVE") throw new AppError("Your account is not active.", 403);
+
+        try {
+            const token = await generateAuthTokens({
+                userId: user.id || "",
+                role: user.role || "CONSUMER"
+            })
+
+            return {
+                ...token,
+                user: {
+                    email: user.email,
+                    role: user.role
+                }
+            }
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async me(userId: string) {
+        const user = await this.userRepository.getUserById(prisma, userId);
+        if (!user) throw new AppError("User account could not be found.", 404);
+        if (user.status !== "ACTIVE") throw new AppError("Your account is not active.", 403);
+
+        return user;
+    }
+
+
+    async forgotPasswordOtp(email: string) {
+        const normalizedEmail = email.trim().toLowerCase();
+
+        const user = await this.userRepository.getUserByEmail(prisma, normalizedEmail);
+        if (!user) throw new AppError(`User with email ${normalizedEmail} is not registered`, 404);
+        if (!user.emailVerifiedAt) throw new AppError("This email address is not verified. A new OTP has been sent to your email.", 409);
+        if (user.status !== "ACTIVE") throw new AppError("Your account is not active, please contact customer service", 403)
+
+
+        const otp = generateOTP(6);
+        const now = new Date();
+        const expiredAt = new Date(now.getTime() + 15 * 60 * 1000);
+
+        const otpHash = await hashPassword(otp);
+
+        await this.otpRepository.upsertOTP(prisma, {
+            otpType: "FORGOT_PASSWORD",
+            email: normalizedEmail,
+            otpHash,
+            createdAt: now,
+            expiredAt,
+        });
+
+        await sendRegistrationOtpEmail({
+            to: normalizedEmail,
+            otp,
+        });
+
+        return true;
+    }
+    async verifyForgotPasswordOtp(dto: RequestOTPVerifyDTO) {
+        const normalizedEmail = dto.email.trim().toLowerCase();
+        const inputOtp = dto.otp.trim();
+
+        const user = await this.userRepository.getUserByEmail(prisma, normalizedEmail);
+        if (!user) throw new AppError(`User with email ${normalizedEmail} is not registered`, 404);
+        if (!user.emailVerifiedAt) throw new AppError("This email address is not verified. A new OTP has been sent to your email.", 409);
+        if (user.status !== "ACTIVE") throw new AppError("Your account is not active, please contact customer service", 403)
+
+        const otpCheck = await this.otpRepository.getOtp(
+            prisma,
+            normalizedEmail,
+            "FORGOT_PASSWORD"
+        );
+
+        if (!otpCheck) throw new AppError("OTP is invalid or has already been used", 400);
+
+        const now = new Date();
+
+        if (now > otpCheck.expiredAt) {
+            throw new AppError("OTP has expired, please request a new OTP", 400);
+        }
+
+        const isValidOtp = await comparePassword(
+            inputOtp,
+            otpCheck.otpHash
+        );
+
+        if (!isValidOtp) throw new AppError("Invalid OTP, please enter the correct OTP", 400);
+
+        return true
+    }
+    async resetPasswordOtp(dto: RequestResetDTO) {
+        const normalizedEmail = dto.email.trim().toLowerCase();
+        const inputOtp = dto.otp.trim();
+
+        const user = await this.userRepository.getUserByEmail(prisma, normalizedEmail);
+        if (!user) throw new AppError(`User with email ${normalizedEmail} is not registered`, 404);
+        if (!user.emailVerifiedAt) throw new AppError("This email address is not verified. A new OTP has been sent to your email.", 409);
+        if (user.status !== "ACTIVE") throw new AppError("Your account is not active, please contact customer service", 403)
+
+        const otpCheck = await this.otpRepository.getOtp(
+            prisma,
+            normalizedEmail,
+            "FORGOT_PASSWORD"
+        );
+
+        if (!otpCheck) throw new AppError("OTP is invalid or has already been used", 400);
+
+        const now = new Date();
+
+        if (now > otpCheck.expiredAt) {
+            throw new AppError("OTP has expired, please request a new OTP", 400);
+        }
+
+        const isValidOtp = await comparePassword(
+            inputOtp,
+            otpCheck.otpHash
+        );
+
+        if (!isValidOtp) throw new AppError("Invalid OTP, please enter the correct OTP", 400);
+
+        return await prisma.$transaction(async (tx) => {
+            await this.otpRepository.deleteOtp(
+                tx,
+                normalizedEmail,
+                "FORGOT_PASSWORD"
+            );
+
+            const patchUser = await this.userRepository.patchUser(
+                tx,
+                user.id || "",
+                {
+                    passwordHash: await hashPassword(dto.password),
+                    status: "ACTIVE",
+                }
+            );
+
+            return patchUser;
+        });
     }
 }
