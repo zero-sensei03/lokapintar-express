@@ -2,15 +2,18 @@ import { prisma } from "../../../libs/prisma";
 import { storageService } from "../../../libs/storage.service";
 import { AppError } from "../../../utils/AppError";
 import { MediaModel, MediaRepository } from "../../media/repository/media.repository";
+import { ProfileRepository } from "../repositories/profile.repository";
 import { UserRepository } from "../repositories/user.respository";
 
 export class ProfileService {
     private userRepository: UserRepository;
     private mediaRepository: MediaRepository;
+    private profileRepository: ProfileRepository;
 
     constructor(){
         this.userRepository = new UserRepository();
         this.mediaRepository = new MediaRepository();
+        this.profileRepository = new ProfileRepository();
     }
 
     async me(userId: string) {
@@ -40,7 +43,7 @@ export class ProfileService {
                     provider: avatarFile.provider
                 }
                 const avatarResult = await this.mediaRepository.createMedia(tx, payloadMedia)
-                return await this.userRepository.patchUser(tx, user.id || "", { avatarId: avatarResult.id })
+                return await this.profileRepository.patchProfile(tx, user.id || "", { avatarId: avatarResult.id })
             })
         } catch (error) {
             throw error;

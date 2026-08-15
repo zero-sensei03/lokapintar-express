@@ -42,7 +42,7 @@ export const authenticate = (
  */
 export const authorizeRoles = (...allowedRoles: Role[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
-    if (!req.user) {
+    if (!req.user || !req.user.role) {
       return sendError(
         res,
         "Authentication required.",

@@ -33,7 +33,6 @@ export class AuthService {
                 email: normalizedEmail,
                 role: "CONSUMER",
                 passwordHash: await hashPassword(dto.password),
-                avatarUrl: null,
             }
 
             const result = await prisma.$transaction(async(tx) => {
@@ -315,8 +314,7 @@ export class AuthService {
                 tx,
                 user.id || "",
                 {
-                    passwordHash: await hashPassword(dto.password),
-                    status: "ACTIVE",
+                    passwordHash: await hashPassword(dto.password)
                 }
             );
 

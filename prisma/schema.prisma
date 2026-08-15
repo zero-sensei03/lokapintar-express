@@ -20,6 +20,7 @@ enum UserStatus {
 
 enum Role {
   SUPERADMIN
+  ADMIN
   EDUCATOR
   CREATOR
   CONSUMER
@@ -80,31 +81,64 @@ model Media {
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 
-  userAvatar  User?           @relation("UserAvatar")
+  userAvatar  UserProfile?           @relation("UserAvatar")
+  userBanner  UserProfile?           @relation("UserBanner")
 
   @@index([provider])
 }
 model User {
   id                    String      @id @default(uuid())
-  name                  String
   email                 String      @unique
   passwordHash          String
+
   role                  Role        @default(CONSUMER)
   status                UserStatus  @default(INACTIVE)
+
   emailVerifiedAt       DateTime?
   lastSuspendedAt       DateTime?
+  educatorSubExpiresAt  DateTime?
 
   createdAt             DateTime    @default(now())
   updatedAt             DateTime    @updatedAt
   deletedAt             DateTime?
 
-  educatorSubExpiresAt  DateTime?
-
-  avatarId  String?     @unique
-  avatar    Media?      @relation("UserAvatar", fields: [avatarId], references: [id], onDelete: SetNull)
+  profile               UserProfile?
 
   @@index([email])
   @@index([role])
+}
+
+model UserProfile {
+  id            String    @id @default(uuid())
+  userId        String    @unique
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Data Identitas & Bio
+  fullName      String
+  bio           String?   @db.Text
+  headline      String?   // Contoh: "Serial Entrepreneur | Ex-Tech Lead"
+  phoneNumber   String?
+  location      String?   // Contoh: "Jakarta, Indonesia"
+  
+  // Preferensi Startup
+  interests     String[]  // Contoh: ["Fintech", "AI/ML", "EdTech", "SaaS"]
+  skills        String[]  // Contoh: ["React", "Go", "Product Management", "Marketing"]
+
+  // Media (Avatar & Cover Banner)
+  avatarId      String?   @unique
+  avatar        Media?    @relation("UserAvatar", fields: [avatarId], references: [id], onDelete: SetNull)
+  
+  bannerId      String?   @unique
+  banner        Media?    @relation("UserBanner", fields: [bannerId], references: [id], onDelete: SetNull)
+
+  // Social & Portfolio Links
+  websiteUrl    String?
+  linkedinUrl   String?
+  githubUrl     String?
+  twitterUrl    String?
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
 
 model OtpVerification {

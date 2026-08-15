@@ -10,26 +10,42 @@ export interface CreateSuperAdminInterface {
 
 export const CreateUser = async (data: CreateSuperAdminInterface) => {
     const payload = {
-        name: data.name.trim(),
         email: data.email.toLowerCase(),
         passwordHash: await hashPassword(data.password),
         role: Role.SUPERADMIN,
         status: UserStatus.ACTIVE,
         emailVerifiedAt: new Date()
     }
+    const profilePayload = {
+        fullName: data.name.trim(),
+    }
+
     return prisma.user.upsert({
         where: {
             email: data.email
         },
-        create: payload,
-        update: payload,
+        create: {
+            ...payload,
+            profile: {
+                create: profilePayload
+            }
+        },
+        update: {
+            ...payload,
+            profile: {
+                upsert: {
+                    create: profilePayload,
+                    update: profilePayload
+                }
+            }
+        },
         select: {
-            name: true,
             email: true,
             role: true,
             status: true,
             emailVerifiedAt: true,
-            createdAt: true
+            createdAt: true,
+            profile: true
         }
     })
 }

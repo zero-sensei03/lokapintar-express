@@ -1,11 +1,7 @@
 import { Response } from "express";
+import { ApiResponse } from "../types/response.type";
 
-interface ApiResponse<T = unknown> {
-  success: boolean;
-  message: string;
-  data?: T;
-  error?: unknown;
-}
+
 
 export const sendSuccess = <T>(
   res: Response,
