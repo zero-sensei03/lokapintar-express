@@ -6,6 +6,7 @@ dist/
 
 # storage
 storage/
+src/storage/
 
 # Environment Variables
 .env

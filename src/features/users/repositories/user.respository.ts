@@ -21,7 +21,7 @@ export type GetAllUserFilter = {
 }
 
 export class UserRepository {
-    async createUser(prisma: Prisma.TransactionClient, payload: UserModel): Promise<Partial<User>> {
+    async createUser(prisma: Prisma.TransactionClient, payload: UserModel) {
         return await prisma.user.create({
             data: {
                 email: payload.email,
@@ -44,11 +44,15 @@ export class UserRepository {
                     include: {
                         avatar: {
                             select: {
+                                id: true,
+                                key: true,
                                 url: true
                             }
                         },
                         banner: {
                             select: {
+                                id: true,
+                                key: true,
                                 url: true
                             }
                         }
@@ -57,7 +61,7 @@ export class UserRepository {
             }
         })
     }
-    async getUserByEmail(prisma: Prisma.TransactionClient, email: string): Promise<Partial<User> | null> {
+    async getUserByEmail(prisma: Prisma.TransactionClient, email: string) {
         return await prisma.user.findUnique({
             where: {
                 email
@@ -74,11 +78,15 @@ export class UserRepository {
                     include: {
                         avatar: {
                             select: {
+                                id: true,
+                                key: true,
                                 url: true
                             }
                         },
                         banner: {
                             select: {
+                                id: true,
+                                key: true,
                                 url: true
                             }
                         }
@@ -87,7 +95,7 @@ export class UserRepository {
             }
         })
     }
-    async getUserById(prisma: Prisma.TransactionClient, id: string): Promise<Partial<User> | null> {
+    async getUserById(prisma: Prisma.TransactionClient, id: string) {
         return await prisma.user.findUnique({
             where: {
                 id
@@ -103,11 +111,15 @@ export class UserRepository {
                     include: {
                         avatar: {
                             select: {
+                                id: true,
+                                key: true,
                                 url: true
                             }
                         },
                         banner: {
                             select: {
+                                id: true,
+                                key: true,
                                 url: true
                             }
                         }
@@ -116,7 +128,7 @@ export class UserRepository {
             }
         })
     }
-    async patchUser(prisma: Prisma.TransactionClient, id: string, payload: Partial<User>): Promise<Partial<User>> {
+    async patchUser(prisma: Prisma.TransactionClient, id: string, payload: Partial<User>) {
         return await prisma.user.update({
             where: {
                 id
@@ -133,11 +145,15 @@ export class UserRepository {
                     include: {
                         avatar: {
                             select: {
+                                id: true,
+                                key: true,
                                 url: true
                             }
                         },
                         banner: {
                             select: {
+                                id: true,
+                                key: true,
                                 url: true
                             }
                         }
@@ -146,7 +162,7 @@ export class UserRepository {
             }
         })
     }
-    async getAllUser(prisma: Prisma.TransactionClient, filter: GetAllUserFilter): Promise<PaginationResponse<Partial<User>[]>> {
+    async getAllUser(prisma: Prisma.TransactionClient, filter: GetAllUserFilter) {
         const {
             page,
             limit,
@@ -244,13 +260,17 @@ export class UserRepository {
 
                             avatar: {
                                 select: {
-                                    url: true,
+                                    id: true,
+                                    key: true,
+                                    url: true
                                 },
                             },
 
                             banner: {
                                 select: {
-                                    url: true,
+                                    id: true,
+                                    key: true,
+                                    url: true
                                 },
                             },
                         },
@@ -270,5 +290,22 @@ export class UserRepository {
             limit,
             totalPages: Math.ceil(total / limit),
         };
+    }
+
+    async getUserPasswordById(prisma: Prisma.TransactionClient, id: string) {
+        return await prisma.user.findUnique({
+            where: {
+                id
+            },
+            select: {
+                id: true,
+                email: true,
+                role: true,
+                status: true,
+                emailVerifiedAt: true,
+                createdAt: true,
+                passwordHash: true,
+            }
+        })
     }
 }

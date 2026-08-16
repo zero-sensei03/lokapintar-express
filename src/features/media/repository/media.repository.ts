@@ -13,4 +13,7 @@ export class MediaRepository {
     async createMedia(prisma: Prisma.TransactionClient, payload: MediaModel): Promise<Partial<Media>> {
         return prisma.media.create({ data: payload })
     }
+    async deleteMedia(prisma: Prisma.TransactionClient, id: string): Promise<Partial<Media>> {
+        return prisma.media.delete({ where: { id } })
+    }
 }

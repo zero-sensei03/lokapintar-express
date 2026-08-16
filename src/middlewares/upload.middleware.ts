@@ -20,7 +20,7 @@ export const createUploadMiddleware = (options: UploadMiddlewareOptions = {}) =>
     if (allowedMimeTypes && !allowedMimeTypes.includes(file.mimetype)) {
       return cb(
         new Error(
-          `Tipe file '${file.mimetype}' tidak diizinkan. Format yang diperbolehkan: ${allowedMimeTypes.join(', ')}`
+          `File type '${file.mimetype}' is not allowed. Allowed formats: ${allowedMimeTypes.join(", ")}`
         )
       );
     }
@@ -47,7 +47,7 @@ export const createUploadMiddleware = (options: UploadMiddlewareOptions = {}) =>
             if (err.code === 'LIMIT_FILE_SIZE') {
               return res.status(400).json({
                 success: false,
-                message: `Ukuran file terlalu besar. Maksimal ${maxFileSizeMB} MB per file.`,
+                message: `File size is too large. Maximum allowed size is ${maxFileSizeMB} MB per file.`,
               });
             }
             return res.status(400).json({ success: false, message: err.message });
@@ -69,13 +69,13 @@ export const createUploadMiddleware = (options: UploadMiddlewareOptions = {}) =>
             if (err.code === 'LIMIT_FILE_SIZE') {
               return res.status(400).json({
                 success: false,
-                message: `Salah satu file melebihi ukuran batas maksimal ${maxFileSizeMB} MB.`,
+                message: `One or more files exceed the maximum allowed size of ${maxFileSizeMB} MB.`,
               });
             }
             if (err.code === 'LIMIT_UNEXPECTED_FILE' || err.code === 'LIMIT_FILE_COUNT') {
               return res.status(400).json({
                 success: false,
-                message: `Jumlah file melebihi batas. Maksimal ${maxFilesCount} file sekaligus.`,
+                message: `The number of files exceeds the limit. A maximum of ${maxFilesCount} files can be uploaded at once.`,
               });
             }
             return res.status(400).json({ success: false, message: err.message });

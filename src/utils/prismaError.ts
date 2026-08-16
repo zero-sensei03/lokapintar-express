@@ -9,31 +9,37 @@ export const parsePrismaError = (error: Prisma.PrismaClientKnownRequestError): P
   console.error(error)
   switch (error.code) {
     case "P2002": {
-      const target = (error.meta?.target as string[])?.join(", ") || "field";
+      const target =
+        (error.meta?.target as string[])?.join(", ") || "field";
+
       return {
         statusCode: 409,
-        message: `Data dengan ${target} tersebut sudah terdaftar.`,
+        message: `Data with ${target} already exists.`,
       };
     }
+
     case "P2025":
       return {
         statusCode: 404,
-        message: "Data yang diminta tidak ditemukan.",
+        message: "The requested data was not found.",
       };
+
     case "P2003":
       return {
         statusCode: 400,
-        message: "Gagal memproses data karena relasi antar data tidak valid.",
+        message: "Failed to process the data because the related data is invalid.",
       };
+
     case "P2014":
       return {
         statusCode: 400,
-        message: "Perubahan tidak dapat dilakukan karena terkait dengan data lain.",
+        message: "The operation cannot be completed because the data is related to other records.",
       };
+
     default:
       return {
         statusCode: 400,
-        message: `Terjadi kesalahan pada database (Code: ${error.code}).`,
+        message: `A database error occurred (Code: ${error.code}).`,
       };
   }
 };
