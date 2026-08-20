@@ -17,7 +17,6 @@ enum UserStatus {
   INACTIVE
   SUSPENDED
 }
-
 enum Role {
   SUPERADMIN
   ADMIN
@@ -25,19 +24,34 @@ enum Role {
   CREATOR
   CONSUMER
 }
-
 enum OTPType {
   REGISTER
   FORGOT_PASSWORD
   CHANGE_EMAIL
 }
-
 enum StorageProvider {
   LOCAL
   S3
   GCS
   SUPABASE
 }
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  RESTORE
+  LOGIN
+  LOGOUT
+  LOGIN_FAILED
+  PASSWORD_CHANGE
+  PASSWORD_RESET
+  ROLE_CHANGE
+  STATUS_CHANGE
+  EXPORT
+  IMPORT
+  OTHER
+}
+
 
 enum ContentType {
   TEXT
@@ -103,11 +117,11 @@ model User {
   deletedAt             DateTime?
 
   profile               UserProfile?
+  audit                 AuditLog[]
 
   @@index([email])
   @@index([role])
 }
-
 model UserProfile {
   id            String    @id @default(uuid())
   userId        String    @unique
@@ -118,7 +132,13 @@ model UserProfile {
   bio           String?   @db.Text
   headline      String?   // Contoh: "Serial Entrepreneur | Ex-Tech Lead"
   phoneNumber   String?
-  location      String?   // Contoh: "Jakarta, Indonesia"
+
+  // address
+  location      String?   // Contoh: "Jakarta, Indonesia" // domisili
+  address       String?   @db.Text
+  latitude      Decimal?  @db.Decimal(10, 7)
+  longitude     Decimal?  @db.Decimal(10, 7)
+  zipPortal     String?
   
   // Preferensi Startup
   interests     String[]  // Contoh: ["Fintech", "AI/ML", "EdTech", "SaaS"]
@@ -140,7 +160,6 @@ model UserProfile {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
-
 model OtpVerification {
   id            String    @id @default(uuid())
   email         String
@@ -151,4 +170,32 @@ model OtpVerification {
   createdAt     DateTime  @default(now())
 
   @@unique([email, otpType])
+}
+model AuditLog {
+  id            String      @id @default(uuid())
+
+  userId        String?
+  action        AuditAction
+  resource      String
+  resourceId    String?
+
+  description   String?     @db.Text
+
+  oldValues     Json?
+  newValues     Json?
+  metadata      Json?
+
+  ipAddress     String?
+  userAgent     String?
+  requestId     String?
+
+  createdAt     DateTime    @default(now())
+
+  user          User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([action])
+  @@index([resource, resourceId])
+  @@index([createdAt])
+  @@index([requestId])
 }

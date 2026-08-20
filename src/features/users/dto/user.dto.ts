@@ -44,6 +44,15 @@ export const GetAllUserSchema = z.object({
         .boolean()
         .default(false),
 });
+export const createUserSchema = z.object({
+  body: z.object({
+      // Required
+      fullName: z
+        .string()
+        .min(2, "Full name must be at least 2 characters.")
+        .max(100, "Full name must not exceed 100 characters."),
+  })
+});
 
 export const updateProfileSchema = z.object({
   body: z.object({
@@ -69,6 +78,28 @@ export const updateProfileSchema = z.object({
       location: nullableOptionalString(
         z.string().max(150, "Location must not exceed 150 characters.")
       ),
+
+      address: nullableOptionalString(
+        z.string().max(1000, "Address must not exceed 1000 characters.")
+      ),
+
+      zipPortal: nullableOptionalString(
+        z.string().max(10, "ZIP/Postal code must not exceed 10 characters.")
+      ),
+
+      latitude: z
+        .number()
+        .min(-90, "Latitude must be between -90 and 90.")
+        .max(90, "Latitude must be between -90 and 90.")
+        .optional()
+        .nullable(),
+
+      longitude: z
+        .number()
+        .min(-180, "Longitude must be between -180 and 180.")
+        .max(180, "Longitude must be between -180 and 180.")
+        .optional()
+        .nullable(),
     
       interests: z
         .array(z.string())

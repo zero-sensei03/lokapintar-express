@@ -4,6 +4,7 @@ import { sendError, sendSuccess } from "../../../utils/response";
 import { formatDateTimeYMDHIS, getTimezoneFromReq } from "../../../utils/date";
 import { createFileTypeSchema } from "../../../types/storage";
 import { UpdatePasswordDTO, UpdateProfileDTO } from "../dto/user.dto";
+import { userAgent } from "../../../utils/userAgent";
 
 export class ProfileController {
     private profileService: ProfileService;
@@ -49,8 +50,10 @@ export class ProfileController {
             if (!validation.success) {
                 return sendSuccess(res, "Error file validation", validation.error.flatten().fieldErrors, 400);
             }
+
+            const agent = await userAgent(req);
     
-            const serviceResult = await this.profileService.changeAvatar(userId, file);
+            const serviceResult = await this.profileService.changeAvatar(agent, userId, file);
             const timezone = getTimezoneFromReq(req);
 
             const result = {
@@ -82,8 +85,10 @@ export class ProfileController {
             if (!validation.success) {
                 return sendSuccess(res, "Error file validation", validation.error.flatten().fieldErrors, 400);
             }
+
+            const agent = await userAgent(req);
     
-            const serviceResult = await this.profileService.changeBanner(userId, file);
+            const serviceResult = await this.profileService.changeBanner(agent, userId, file);
             const timezone = getTimezoneFromReq(req);
 
             const result = {
@@ -103,7 +108,8 @@ export class ProfileController {
             const userId = req.user?.userId || "";
             if (!userId) return sendError(res, "User profile not found", null, 404);
     
-            const serviceResult = await this.profileService.deleteBanner(userId);
+            const agent = await userAgent(req);
+            const serviceResult = await this.profileService.deleteBanner(agent, userId);
             const timezone = getTimezoneFromReq(req);
 
             const result = {
@@ -124,8 +130,11 @@ export class ProfileController {
             if (!userId) return sendError(res, "User profile not found", null, 404);
     
            const payload: UpdateProfileDTO = req.body;
+
+           const agent = await userAgent(req);
     
             const profile = await this.profileService.patchProfile(
+                agent,
                 userId,
                 payload
             );
@@ -149,8 +158,11 @@ export class ProfileController {
             if (!userId) return sendError(res, "User profile not found", null, 404);
     
            const payload: UpdatePasswordDTO = req.body;
+
+           const agent = await userAgent(req);
     
             const profile = await this.profileService.patchPassword(
+                agent,
                 userId,
                 payload
             );
