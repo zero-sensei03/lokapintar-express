@@ -14,7 +14,7 @@ export const generateCaptcha = () => {
     size: 6,
     noise: 3,
     color: true,
-    background: "#f0f0f0",
+    background: "#FFD166",
     width: 150,
     height: 50,
   });
